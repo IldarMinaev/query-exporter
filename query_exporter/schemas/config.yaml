@@ -149,6 +149,17 @@ definitions:
           - type: string
             pattern: ^[0-9]+[smhd]?$
           - type: "null"
+      croniter:
+        title: The cron based string to run queries with interval based on cron like string
+        description: >
+          Used to calculate nearest start time for the query.
+          
+          Format:
+            m h dom mon dow
+          
+          If interval not set it will be calculated as difference between 2 nearest iterations for provided cron like string
+        type: string
+        pattern: ^(\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\*|([0-9]|1[0-9]|2[0-3])|\*\/([0-9]|1[0-9]|2[0-3])) (\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\*|([1-9]|1[0-2])|\*\/([1-9]|1[0-2])) (\*|([0-6])|\*\/([0-6]))$
       metrics:
         title: List of metrics that the query updates
         type: array

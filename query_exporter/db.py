@@ -108,6 +108,7 @@ class Query:
         self,
         name: str,
         interval: int,
+        croniter: str,
         databases: List[str],
         metrics: List[QueryMetric],
         sql: str,
@@ -115,6 +116,7 @@ class Query:
     ):
         self.name = name
         self.interval = interval
+        self.croniter = croniter
         self.databases = databases
         self.metrics = metrics
         self.sql = sql

@@ -16,6 +16,8 @@ from typing import (
 
 from prometheus_aioexporter import MetricsRegistry
 from toolrack.aio import PeriodicCall
+from croniter import croniter
+from datetime import datetime
 
 from .config import (
     Config,
@@ -67,7 +69,10 @@ class QueryLoop:
         for query in self._periodic_queries:
             call = PeriodicCall(self.loop, self._run_query, query)
             self._periodic_calls[query.name] = call
-            call.start(query.interval)
+            if query.croniter is not None:
+                self.loop.call_at(self.loop.time() + (croniter(query.croniter, datetime.now()).get_next(datetime) - datetime.now()).seconds, call.start, query.interval)
+            else:
+                call.start(query.interval)
 
     async def stop(self):
         """Stop periodic query execution."""

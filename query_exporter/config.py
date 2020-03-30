@@ -3,6 +3,7 @@
 from collections import defaultdict
 from copy import deepcopy
 from logging import Logger
+from croniter import croniter
 import os
 import re
 from typing import (
@@ -169,6 +170,7 @@ def _get_queries(
                         Query(
                             f"{name}[params{index}]",
                             config["interval"],
+                            config["croniter"],
                             config["databases"],
                             query_metrics,
                             config["sql"].strip(),
@@ -181,6 +183,7 @@ def _get_queries(
                 queries[name] = Query(
                     name,
                     config["interval"],
+                    config["croniter"],
                     config["databases"],
                     query_metrics,
                     config["sql"].strip(),
@@ -234,20 +237,26 @@ def _validate_query_config(
 def _convert_query_interval(name: str, config: Dict[str, Any]):
     """Convert query intervals to seconds."""
     interval = config.setdefault("interval", None)
-    if interval is None:
+    _croniter = config.setdefault("croniter", None)
+    if interval is None and _croniter is None:
         # the query should be run at every request
         return
 
-    multiplier = 1
-    if isinstance(interval, str):
-        # convert to seconds
-        multipliers = {"s": 1, "m": 60, "h": 3600, "d": 3600 * 24}
-        suffix = interval[-1]
-        if suffix in multipliers:
-            interval = interval[:-1]
-            multiplier = multipliers[suffix]
+    if _croniter is not None:
+        iter=croniter(_croniter)
+        if interval is None:
+            config["interval"]=int(abs(iter.get_next() - iter.get_next()))
+    else:
+        multiplier = 1
+        if isinstance(interval, str):
+            # convert to seconds
+            multipliers = {"s": 1, "m": 60, "h": 3600, "d": 3600 * 24}
+            suffix = interval[-1]
+            if suffix in multipliers:
+                interval = interval[:-1]
+                multiplier = multipliers[suffix]
 
-    config["interval"] = int(interval) * multiplier
+        config["interval"] = int(interval) * multiplier
 
 
 def _resolve_dsn(dsn: str, env: Environ) -> str:
